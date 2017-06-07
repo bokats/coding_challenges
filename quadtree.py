@@ -31,11 +31,11 @@ class Quadtree(object):
             if current_node.taken():
                 if not current_node.has_children():
                     self.create_children(current_node)
-                child = self.find_child(current_node)
+                child = self.find_child(x, y, current_node)
                 current_node = current_node.children[child]
             else:
                 current_node.current_point = [x,y]
-                break
+                return current_node
 
     def create_children(self, parent):
         center_x = parent.x_upper_bound / 2
@@ -54,13 +54,38 @@ class Quadtree(object):
         center_y, parent.y_upper_bound))
 
     def find_child(self, x, y, parent):
-        if x <= parent.x_upper_bound:
-            if y <= parent.y_upper_bound:
+        if x <= parent.x_upper_bound / 2:
+            if y <= parent.y_upper_bound / 2:
                 return 0
             else:
                 return 1
         else:
-            if y <= parent.y_upper_bound:
+            if y <= parent.y_upper_bound / 2:
                 return 2
             else:
                 return 3
+
+
+# Tests
+root = Node(0,100,0,20)
+q = Quadtree(root)
+assert q.root.x_upper_bound == 100
+assert q.root.y_upper_bound == 20
+
+q.insert_coordinates(0,5)
+assert q.root.x_upper_bound == 100
+assert q.root.taken()
+assert q.root.current_point == [0,5]
+
+q.insert_coordinates(0,10)
+assert q.root.has_children()
+assert q.root.children[0].current_point == [0,10]
+assert q.root.children[1].current_point == None
+
+q.insert_coordinates(60, 15)
+assert q.root.current_point == [0,5]
+# print(q.root.children[3].current_point)
+assert q.root.children[3].current_point == [60,15]
+
+q.insert_coordinates(98, 18)
+assert q.root.children[3].children[3].current_point == [98,18]
